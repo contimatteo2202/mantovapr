@@ -99,9 +99,12 @@
   /* HOME cards */
   .choice-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: clamp(12px, 3vw, 16px);
+    grid-template-columns: 1fr;
+    gap: clamp(14px, 3vw, 18px);
     margin-bottom: 1.5rem;
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
   }
   .choice-card {
     background: #fff;
@@ -131,6 +134,12 @@
     letter-spacing: 1px;
     text-transform: uppercase;
   }
+
+  /* Home page – aspetto centrato */
+  #s-home .screen-label,
+  #s-home .screen-title { text-align: center; }
+  #s-home .screen-title { margin-bottom: clamp(1.25rem, 4vw, 1.75rem); }
+  #s-home .choice-card { padding: clamp(1.75rem, 5vw, 2.25rem) clamp(1.25rem, 4vw, 1.75rem); }
   .badge-red { background: var(--rosso-soft); color: var(--rosso); border: 1px solid #f0c0c8; }
   .badge-blue { background: var(--blu-soft); color: var(--blu); border: 1px solid #b0c0e8; }
 
@@ -349,12 +358,13 @@
     .screen-label { margin-bottom: 2px; font-size: 9px; }
     .screen-title { font-size: 18px; margin-bottom: 6px; }
     .screen-desc { margin-bottom: 0.8rem; font-size: 12px; }
-    .choice-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0; }
-    .choice-card { padding: 0.8rem 0.6rem; border-radius: 10px; }
-    .choice-card .cc-icon { font-size: 24px; margin-bottom: 6px; }
-    .choice-card .cc-title { font-size: 15px; }
-    .choice-card .cc-sub { font-size: 10px; margin-top: 2px; }
-    .choice-card .cc-badge { margin-top: 6px; padding: 2px 7px; font-size: 8px; }
+    .choice-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 0; max-width: 100%; }
+    .choice-card { padding: 1.4rem 1rem; border-radius: 14px; }
+    .choice-card .cc-icon { font-size: 34px; margin-bottom: 10px; }
+    .choice-card .cc-title { font-size: 20px; }
+    .choice-card .cc-sub { font-size: 12px; margin-top: 5px; }
+    .choice-card .cc-badge { margin-top: 10px; padding: 4px 12px; font-size: 9px; }
+    #s-home .screen-title { font-size: 22px; margin-bottom: 1.1rem; }
     .choice-list { gap: 6px; margin-bottom: 0.8rem; }
     .choice-item { padding: 0.65rem 0.8rem; gap: 10px; }
     .choice-item .ci-icon { font-size: 20px; width: 28px; }
@@ -492,6 +502,53 @@
     font-size: clamp(15px, 3vw, 16px);
     font-weight: 600;
     color: var(--rosso);
+  }
+
+  /* ── TOAST DI CONFERMA ── */
+  .toast-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    padding: 24px;
+  }
+  .toast-overlay.show { opacity: 1; pointer-events: auto; }
+  .toast-box {
+    background: #1a9e3f;
+    color: #fff;
+    border-radius: 16px;
+    padding: clamp(20px, 5vw, 28px) clamp(24px, 6vw, 36px);
+    box-shadow: 0 12px 40px rgba(26,158,63,0.35);
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+    transform: scale(0.9);
+    transition: transform 0.28s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .toast-overlay.show .toast-box { transform: scale(1); }
+  .toast-check {
+    width: clamp(46px, 12vw, 56px);
+    height: clamp(46px, 12vw, 56px);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    font-size: clamp(26px, 7vw, 32px);
+    line-height: 1;
+  }
+  .toast-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(17px, 4vw, 20px);
+    font-weight: 700;
+    line-height: 1.3;
   }
 
 </style>
@@ -713,6 +770,14 @@
 
 </div>
 
+<!-- TOAST DI CONFERMA -->
+<div class="toast-overlay" id="toast-overlay">
+  <div class="toast-box">
+    <div class="toast-check">✓</div>
+    <div class="toast-text">Form compilato correttamente</div>
+  </div>
+</div>
+
 <script>
 const SCRIPT_RPE    = 'https://script.google.com/macros/s/AKfycbxl_tohUYK_Od_jj54ninIxkBwGofgO3GamrcjF4dIp2nPI2OY7wLQ0z3IBI_R_B3mFTQ/exec';
 const SCRIPT_HOOPER = 'https://script.google.com/macros/s/AKfycbyLgNWfWQnstVIH8cUQKBu0BDwv_MIKI3d6V6WPAgVPDyCVEC--zansU3xY2vA3p7Xt/exec';
@@ -804,6 +869,12 @@ function go(id) {
   window.scrollTo(0, 0);
 }
 
+function showToast() {
+  var ov = document.getElementById('toast-overlay');
+  ov.classList.add('show');
+  setTimeout(function() { ov.classList.remove('show'); }, 2400);
+}
+
 function setSession(s) {
   currentSession = s;
   document.getElementById('bc-session').textContent = s;
@@ -880,12 +951,14 @@ async function submitRPE() {
   var payload = { tipo: 'RPE', nome: nome, sessione: currentSession, rpe: rpeVal, fattori: Array.from(selectedFactors).join(', ') || '\u2014', note: note || '\u2014' };
   try {
     await fetch(SCRIPT_RPE, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    showMsg(msg, 'success', 'Valutazione inviata. Grazie!');
     document.getElementById('rpe-note').value = '';
     rpeVal = null; selectedFactors.clear();
     document.querySelectorAll('.rpe-btn').forEach(function(b) { b.classList.remove('sel'); });
     document.querySelectorAll('.factor-btn').forEach(function(b) { b.classList.remove('sel'); });
     document.getElementById('rpe-sel-box').style.display = 'none';
+    msg.style.display = 'none';
+    go('s-home');
+    showToast();
   } catch(e) { showMsg(msg, 'error', 'Errore di rete. Riprova.'); }
   btn.disabled = false; btn.textContent = 'Invia valutazione';
 }
@@ -903,13 +976,15 @@ async function submitHooper() {
   var payload = { tipo: 'Hooper', nome: nome, sonno_ore: ore ? parseInt(ore) : 0, sonno_min: min ? parseInt(min) : 0, qualita_sonno: hooScale.sleep, doms: hooScale.doms, stress: hooScale.stress, umore: hooScale.umore };
   try {
     await fetch(SCRIPT_HOOPER, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    showMsg(msg, 'success', 'Questionario inviato. Grazie!');
     document.getElementById('h-ore').value = '';
     document.getElementById('h-min').value = '';
     Object.keys(hooScale).forEach(function(k) { hooScale[k] = null; });
     ['h-sleep-scale','h-doms-scale','h-stress-scale','h-umore-scale'].forEach(function(id) {
       document.getElementById(id).querySelectorAll('.scale-btn').forEach(function(b) { b.classList.remove('sel'); });
     });
+    msg.style.display = 'none';
+    go('s-home');
+    showToast();
   } catch(e) { showMsg(msg, 'error', 'Errore di rete. Riprova.'); }
   btn.disabled = false; btn.textContent = 'Invia questionario';
 }
