@@ -347,6 +347,8 @@
   }
   .login-text:focus { border-color: var(--rosso); background: #fff; }
   .login-hint { font-size: clamp(12px, 2.6vw, 13px); color: var(--testo-soft); line-height: 1.5; margin-top: 4px; }
+  .fa-link { color: var(--rosso); font-weight: 700; text-decoration: none; }
+  .fa-link:hover { text-decoration: underline; }
 
   .home-hero {
     background: linear-gradient(135deg, #fff8f9 0%, #fdf6fb 100%);
@@ -587,7 +589,7 @@
       <div class="login-card">
         <img src="" class="login-logo" id="login-logo" alt="Mantova FC">
         <div class="login-title">Mantova Primavera</div>
-        <div class="login-sub">Seleziona il tuo nome per accedere <br>e attendi per inserire il pin</div>
+        <div class="login-sub">Seleziona il tuo nome per accedere</div>
         <div class="pin-label">Il tuo nome</div>
         <select class="login-select" id="login-nome" onchange="onNameSelected()">
           <option value="">— Seleziona il tuo nome —</option>
@@ -599,18 +601,14 @@
           <option value="Giovanni Parma">Giovanni Parma</option>
           <option value="Sara Cappelletto">Sara Cappelletto</option>
           <option value="Marco Zanetti">Marco Zanetti</option>
-         <option value="Paolo Conti ">Paolo Conti</option>
+         <option value="Paolo Conti">Paolo Conti</option>
         </select>
 
         <div id="pin-block" style="display:none">
           <div class="pin-label">Il tuo PIN</div>
           <input type="tel" class="pin-input" id="pin-input" maxlength="4" placeholder="&#8226; &#8226; &#8226; &#8226;" inputmode="numeric" autocomplete="off">
           <button class="btn-primary" id="login-btn" style="margin-top:20px" onclick="tryLogin()">Accedi</button>
-        </div>
-
-        <div id="firstaccess-cta" style="display:none">
-          <div class="login-hint">È il tuo primo accesso: imposta la tua mail e scegli un PIN personale di 4 cifre.</div>
-          <button class="btn-primary" style="margin-top:14px" onclick="goFirstAccess()">Inizia registrazione</button>
+          <div class="login-hint" style="margin-top:16px">È il tuo primo accesso? <a href="#" class="fa-link" onclick="goFirstAccess();return false;">Registrati qui</a></div>
         </div>
 
         <div class="msg" id="login-msg"></div>
@@ -644,7 +642,7 @@
       <div class="home-hero-title">Bentornato</div>
       <div class="home-hero-text" id="welcome-text">Che modulo devi compilare?</div>
     </div>
-    <div class="screen-label">Scegli il questionario</div>
+    <div class="screen-label">Scegli questionario</div>
     <div class="screen-title" id="home-title">Cosa vuoi compilare?</div>
     <div class="choice-grid">
       <div class="choice-card" onclick="go('s-rpe-session')">
@@ -836,32 +834,14 @@ async function apiLogin(payload) {
   return await res.json();
 }
 
-// Quando l'atleta sceglie il nome: controlla se è già registrato
-async function onNameSelected() {
+// Quando l'atleta sceglie il nome: mostra subito il campo PIN (nessuna attesa)
+function onNameSelected() {
   const nome = document.getElementById('login-nome').value;
-  const msg = document.getElementById('login-msg');
   const pinBlock = document.getElementById('pin-block');
-  const faCta = document.getElementById('firstaccess-cta');
-  pinBlock.style.display = 'none';
-  faCta.style.display = 'none';
+  document.getElementById('login-msg').style.display = 'none';
   document.getElementById('pin-input').value = '';
-  msg.style.display = 'none';
-  if (!nome) return;
-  showMsg(msg, 'info', 'Verifica in corso…');
-  try {
-    const r = await apiLogin({ action: 'check', nome: nome });
-    msg.style.display = 'none';
-    if (r && r.ok && r.registered) {
-      pinBlock.style.display = '';
-      document.getElementById('pin-input').focus();
-    } else if (r && r.ok && !r.registered) {
-      faCta.style.display = '';
-    } else {
-      showMsg(msg, 'error', 'Errore di verifica. Riprova.');
-    }
-  } catch(e) {
-    showMsg(msg, 'error', 'Errore di rete. Controlla la connessione e riprova.');
-  }
+  pinBlock.style.display = nome ? '' : 'none';
+  if (nome) document.getElementById('pin-input').focus();
 }
 
 // Accesso con PIN (utente già registrato)
@@ -960,7 +940,6 @@ function logout() {
   document.getElementById('pin-input').value = '';
   document.getElementById('login-nome').value = '';
   document.getElementById('pin-block').style.display = 'none';
-  document.getElementById('firstaccess-cta').style.display = 'none';
   document.getElementById('login-msg').style.display = 'none';
   go('s-login');
 }
