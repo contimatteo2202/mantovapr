@@ -329,6 +329,24 @@
   }
   .msg.success { background: #eaf8ee; color: #1a7a30; display: block; border: 1px solid #b0ddc0; }
   .msg.error   { background: #fce8ec; color: var(--rosso); display: block; border: 1px solid #f0b0bc; }
+  .msg.info    { background: #eef2fb; color: #334a7a; display: block; border: 1px solid #cdd8f0; }
+  .login-text {
+    width: 100%;
+    background: #fafafa;
+    border: 1.5px solid var(--bordo);
+    border-radius: 10px;
+    padding: clamp(12px, 2.8vw, 14px) clamp(13px, 3vw, 15px);
+    font-size: clamp(15px, 3vw, 16px);
+    font-family: 'Inter', sans-serif;
+    color: var(--testo);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+    margin-bottom: 4px;
+    -webkit-appearance: none;
+  }
+  .login-text:focus { border-color: var(--rosso); background: #fff; }
+  .login-hint { font-size: clamp(12px, 2.6vw, 13px); color: var(--testo-soft); line-height: 1.5; margin-top: 4px; }
 
   .home-hero {
     background: linear-gradient(135deg, #fff8f9 0%, #fdf6fb 100%);
@@ -569,9 +587,9 @@
       <div class="login-card">
         <img src="" class="login-logo" id="login-logo" alt="Mantova FC">
         <div class="login-title">Mantova Primavera</div>
-        <div class="login-sub">Seleziona il tuo nome e inserisci il PIN per accedere</div>
+        <div class="login-sub">Seleziona il tuo nome per accedere</div>
         <div class="pin-label">Il tuo nome</div>
-        <select class="login-select" id="login-nome">
+        <select class="login-select" id="login-nome" onchange="onNameSelected()">
           <option value="">— Seleziona il tuo nome —</option>
           <option value="Cristian Cantarelli">Cristian Cantarelli</option>
           <option value="Matteo Conti">Matteo Conti</option>
@@ -582,10 +600,39 @@
           <option value="Sara Cappelletto">Sara Cappelletto</option>
           <option value="Marco Zanetti">Marco Zanetti</option>
         </select>
-        <div class="pin-label">Il tuo PIN</div>
-        <input type="tel" class="pin-input" id="pin-input" maxlength="4" placeholder="&#8226; &#8226; &#8226; &#8226;" inputmode="numeric" autocomplete="off">
-        <button class="btn-primary" style="margin-top:20px" onclick="tryLogin()">Accedi</button>
+
+        <div id="pin-block" style="display:none">
+          <div class="pin-label">Il tuo PIN</div>
+          <input type="tel" class="pin-input" id="pin-input" maxlength="4" placeholder="&#8226; &#8226; &#8226; &#8226;" inputmode="numeric" autocomplete="off">
+          <button class="btn-primary" id="login-btn" style="margin-top:20px" onclick="tryLogin()">Accedi</button>
+        </div>
+
+        <div id="firstaccess-cta" style="display:none">
+          <div class="login-hint">È il tuo primo accesso: imposta la tua mail e scegli un PIN personale di 4 cifre.</div>
+          <button class="btn-primary" style="margin-top:14px" onclick="goFirstAccess()">Inizia registrazione</button>
+        </div>
+
         <div class="msg" id="login-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRIMO ACCESSO -->
+  <div class="screen" id="s-firstaccess">
+    <div class="login-wrapper">
+      <div class="login-card">
+        <img src="" class="login-logo" id="fa-logo" alt="Mantova FC">
+        <div class="login-title">Primo accesso</div>
+        <div class="login-sub">Ciao <span id="fa-nome-display"></span>! Imposta la tua mail e scegli un PIN di 4 cifre. Ti servirà per i prossimi accessi.</div>
+        <div class="pin-label">La tua mail</div>
+        <input type="email" class="login-text" id="fa-mail" placeholder="esempio@mail.com" autocomplete="email">
+        <div class="pin-label" style="margin-top:14px">Scegli un PIN (4 cifre)</div>
+        <input type="tel" class="pin-input" id="fa-pin1" maxlength="4" placeholder="&#8226; &#8226; &#8226; &#8226;" inputmode="numeric" autocomplete="off">
+        <div class="pin-label" style="margin-top:14px">Ripeti il PIN</div>
+        <input type="tel" class="pin-input" id="fa-pin2" maxlength="4" placeholder="&#8226; &#8226; &#8226; &#8226;" inputmode="numeric" autocomplete="off">
+        <button class="btn-primary" id="fa-btn" style="margin-top:20px" onclick="submitFirstAccess()">Registrati e accedi</button>
+        <button class="btn-back" style="margin-top:10px" onclick="backToLogin()">← Indietro</button>
+        <div class="msg" id="fa-msg"></div>
       </div>
     </div>
   </div>
@@ -596,7 +643,7 @@
       <div class="home-hero-title">Bentornato</div>
       <div class="home-hero-text" id="welcome-text">Che modulo devi compilare?</div>
     </div>
-    <div class="screen-label">Scegli questionario</div>
+    <div class="screen-label">Scegli il questionario</div>
     <div class="screen-title" id="home-title">Cosa vuoi compilare?</div>
     <div class="choice-grid">
       <div class="choice-card" onclick="go('s-rpe-session')">
@@ -775,26 +822,123 @@
 const SCRIPT_RPE    = 'https://script.google.com/macros/s/AKfycbxl_tohUYK_Od_jj54ninIxkBwGofgO3GamrcjF4dIp2nPI2OY7wLQ0z3IBI_R_B3mFTQ/exec';
 const SCRIPT_HOOPER = 'https://script.google.com/macros/s/AKfycbyLgNWfWQnstVIH8cUQKBu0BDwv_MIKI3d6V6WPAgVPDyCVEC--zansU3xY2vA3p7Xt/exec';
 
-const PIN_DB = {
-  '2471': 'Matteo Conti',
-  '3815': 'Antonio Indelicato',
-  '5294': 'Giovanni Parma',
-  '6738': 'Sebastiano Monese',
-  '9162': 'Marco Zanetti',
-  '4527': 'Lauritano Lorenzo',
-  '7341': 'Cristian Cantarelli',
-  '8653': 'Sara Cappelletto'
-};
+const SCRIPT_LOGIN  = 'https://script.google.com/macros/s/AKfycby51OXkJx1kiOHitm6hSA61LKsnq6GeSZQIuH-LYdEO5dB1pqxoKEjYkXx8n-qf02iA/exec';
 
 let loggedUser = null;
 
-function tryLogin() {
+async function apiLogin(payload) {
+  const res = await fetch(SCRIPT_LOGIN, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  return await res.json();
+}
+
+// Quando l'atleta sceglie il nome: controlla se è già registrato
+async function onNameSelected() {
+  const nome = document.getElementById('login-nome').value;
+  const msg = document.getElementById('login-msg');
+  const pinBlock = document.getElementById('pin-block');
+  const faCta = document.getElementById('firstaccess-cta');
+  pinBlock.style.display = 'none';
+  faCta.style.display = 'none';
+  document.getElementById('pin-input').value = '';
+  msg.style.display = 'none';
+  if (!nome) return;
+  showMsg(msg, 'info', 'Verifica in corso…');
+  try {
+    const r = await apiLogin({ action: 'check', nome: nome });
+    msg.style.display = 'none';
+    if (r && r.ok && r.registered) {
+      pinBlock.style.display = '';
+      document.getElementById('pin-input').focus();
+    } else if (r && r.ok && !r.registered) {
+      faCta.style.display = '';
+    } else {
+      showMsg(msg, 'error', 'Errore di verifica. Riprova.');
+    }
+  } catch(e) {
+    showMsg(msg, 'error', 'Errore di rete. Controlla la connessione e riprova.');
+  }
+}
+
+// Accesso con PIN (utente già registrato)
+async function tryLogin() {
   const nome = document.getElementById('login-nome').value;
   const pin = document.getElementById('pin-input').value.trim();
   const msg = document.getElementById('login-msg');
+  const btn = document.getElementById('login-btn');
   if (!nome) { showMsg(msg, 'error', 'Seleziona il tuo nome.'); return; }
-  if (!pin || pin.length !== 4) { showMsg(msg, 'error', 'Inserisci un PIN di 4 cifre.'); return; }
-  if (!PIN_DB[pin] || PIN_DB[pin] !== nome) { showMsg(msg, 'error', 'Nome e PIN non corrispondono. Riprova.'); document.getElementById('pin-input').value = ''; return; }
+  if (!/^[0-9]{4}$/.test(pin)) { showMsg(msg, 'error', 'Inserisci un PIN di 4 cifre.'); return; }
+  btn.disabled = true; btn.textContent = 'Accesso…'; msg.style.display = 'none';
+  try {
+    const r = await apiLogin({ action: 'verify', nome: nome, pin: pin });
+    if (r && r.ok && r.registered && r.match) {
+      doLogin(nome);
+    } else if (r && r.ok && r.registered && !r.match) {
+      showMsg(msg, 'error', 'PIN errato. Riprova.');
+      document.getElementById('pin-input').value = '';
+    } else if (r && r.ok && !r.registered) {
+      goFirstAccess();
+    } else {
+      showMsg(msg, 'error', 'Errore. Riprova.');
+    }
+  } catch(e) {
+    showMsg(msg, 'error', 'Errore di rete. Riprova.');
+  }
+  btn.disabled = false; btn.textContent = 'Accedi';
+}
+
+// Vai alla schermata di primo accesso
+function goFirstAccess() {
+  const nome = document.getElementById('login-nome').value;
+  if (!nome) return;
+  document.getElementById('fa-nome-display').textContent = nome.split(' ')[0];
+  document.getElementById('fa-mail').value = '';
+  document.getElementById('fa-pin1').value = '';
+  document.getElementById('fa-pin2').value = '';
+  document.getElementById('fa-msg').style.display = 'none';
+  var topbarImg = document.querySelector('.topbar-right img');
+  if (topbarImg) document.getElementById('fa-logo').src = topbarImg.src;
+  go('s-firstaccess');
+}
+
+function backToLogin() {
+  document.getElementById('login-msg').style.display = 'none';
+  go('s-login');
+}
+
+// Registrazione primo accesso: mail + PIN (doppio)
+async function submitFirstAccess() {
+  const nome = document.getElementById('login-nome').value;
+  const mail = document.getElementById('fa-mail').value.trim();
+  const p1 = document.getElementById('fa-pin1').value.trim();
+  const p2 = document.getElementById('fa-pin2').value.trim();
+  const msg = document.getElementById('fa-msg');
+  const btn = document.getElementById('fa-btn');
+  if (!nome) { showMsg(msg, 'error', 'Nome mancante. Torna indietro.'); return; }
+  if (!mail || mail.indexOf('@') === -1 || mail.indexOf('.') === -1) { showMsg(msg, 'error', 'Inserisci una mail valida.'); return; }
+  if (!/^[0-9]{4}$/.test(p1)) { showMsg(msg, 'error', 'Il PIN deve essere di 4 cifre.'); return; }
+  if (p1 !== p2) { showMsg(msg, 'error', 'I due PIN non coincidono.'); return; }
+  btn.disabled = true; btn.textContent = 'Registrazione…'; msg.style.display = 'none';
+  try {
+    const r = await apiLogin({ action: 'register', nome: nome, mail: mail, pin: p1 });
+    if (r && r.ok) {
+      doLogin(nome);
+    } else if (r && r.error && r.error.indexOf('già registrat') !== -1) {
+      showMsg(msg, 'error', 'Risulti già registrato. Torna indietro e accedi con il PIN.');
+    } else {
+      showMsg(msg, 'error', (r && r.error) ? r.error : 'Errore nella registrazione.');
+    }
+  } catch(e) {
+    showMsg(msg, 'error', 'Errore di rete. Riprova.');
+  }
+  btn.disabled = false; btn.textContent = 'Registrati e accedi';
+}
+
+// Login effettivo (condiviso)
+function doLogin(nome) {
   loggedUser = nome;
   var firstName = nome.split(' ')[0];
   document.getElementById('user-badge').textContent = loggedUser;
@@ -804,7 +948,7 @@ function tryLogin() {
   document.getElementById('h-nome-display').textContent = loggedUser;
   document.getElementById('welcome-text').textContent = 'Bentornato ' + firstName + ', che modulo devi compilare?';
   document.getElementById('home-title').textContent = 'Ciao ' + firstName + '!';
-  msg.style.display = 'none';
+  document.getElementById('login-msg').style.display = 'none';
   go('s-home');
 }
 
@@ -814,6 +958,8 @@ function logout() {
   document.getElementById('btn-logout').style.display = 'none';
   document.getElementById('pin-input').value = '';
   document.getElementById('login-nome').value = '';
+  document.getElementById('pin-block').style.display = 'none';
+  document.getElementById('firstaccess-cta').style.display = 'none';
   document.getElementById('login-msg').style.display = 'none';
   go('s-login');
 }
@@ -821,7 +967,7 @@ function logout() {
 document.addEventListener('DOMContentLoaded', function() {
   var pinEl = document.getElementById('pin-input');
   pinEl.addEventListener('keyup', function(e) {
-    if (e.key === 'Enter') tryLogin();
+    if (e.key === 'Enter') { tryLogin(); return; }
     if (pinEl.value.length === 4 && /^[0-9]{4}$/.test(pinEl.value)) {
       setTimeout(tryLogin, 200);
     }
