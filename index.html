@@ -601,7 +601,6 @@
           <option value="Giovanni Parma">Giovanni Parma</option>
           <option value="Sara Cappelletto">Sara Cappelletto</option>
           <option value="Marco Zanetti">Marco Zanetti</option>
-         <option value="Paolo Conti">Paolo Conti</option>
         </select>
 
         <div id="pin-block" style="display:none">
@@ -908,7 +907,8 @@ async function submitFirstAccess() {
     if (r && r.ok) {
       doLogin(nome);
     } else if (r && r.error && r.error.indexOf('già registrat') !== -1) {
-      showMsg(msg, 'error', 'Risulti già registrato. Torna indietro e accedi con il PIN.');
+      go('s-login');
+      showToast('Sei già registrato! Accedi con il tuo PIN.', 'warn');
     } else {
       showMsg(msg, 'error', (r && r.error) ? r.error : 'Errore nella registrazione.');
     }
@@ -988,8 +988,20 @@ function go(id) {
   window.scrollTo(0, 0);
 }
 
-function showToast() {
+function showToast(text, type) {
+  text = text || 'Form compilato correttamente';
+  type = type || 'success';
   var ov = document.getElementById('toast-overlay');
+  var box = ov.querySelector('.toast-box');
+  var icon = ov.querySelector('.toast-check');
+  ov.querySelector('.toast-text').textContent = text;
+  if (type === 'warn') {
+    box.style.background = '#C8102E';
+    icon.textContent = '!';
+  } else {
+    box.style.background = '#1a9e3f';
+    icon.textContent = '\u2713';
+  }
   ov.classList.add('show');
   setTimeout(function() { ov.classList.remove('show'); }, 2400);
 }
