@@ -592,15 +592,7 @@
         <div class="login-sub">Seleziona il tuo nome per accedere</div>
         <div class="pin-label">Il tuo nome</div>
         <select class="login-select" id="login-nome" onchange="onNameSelected()">
-          <option value="">— Seleziona il tuo nome —</option>
-          <option value="Cristian Cantarelli">Cristian Cantarelli</option>
-          <option value="Matteo Conti">Matteo Conti</option>
-          <option value="Antonio Indelicato">Antonio Indelicato</option>
-          <option value="Lauritano Lorenzo">Lauritano Lorenzo</option>
-          <option value="Sebastiano Monese">Sebastiano Monese</option>
-          <option value="Giovanni Parma">Giovanni Parma</option>
-          <option value="Sara Cappelletto">Sara Cappelletto</option>
-          <option value="Marco Zanetti">Marco Zanetti</option>
+          <option value="">— Caricamento… —</option>
         </select>
 
         <div id="pin-block" style="display:none">
@@ -820,7 +812,7 @@
 const SCRIPT_RPE    = 'https://script.google.com/macros/s/AKfycbxl_tohUYK_Od_jj54ninIxkBwGofgO3GamrcjF4dIp2nPI2OY7wLQ0z3IBI_R_B3mFTQ/exec';
 const SCRIPT_HOOPER = 'https://script.google.com/macros/s/AKfycbyLgNWfWQnstVIH8cUQKBu0BDwv_MIKI3d6V6WPAgVPDyCVEC--zansU3xY2vA3p7Xt/exec';
 
-const SCRIPT_LOGIN  = 'https://script.google.com/macros/s/AKfycby51OXkJx1kiOHitm6hSA61LKsnq6GeSZQIuH-LYdEO5dB1pqxoKEjYkXx8n-qf02iA/exec';
+const SCRIPT_LOGIN  = 'https://script.google.com/macros/s/AKfycbwjlp1LkOZOgwXrI7pQWHwmghYSnGIxuu52k3_3eme7Zj89Cex0sqYGq8CBKlj6Uoyz/exec';
 
 let loggedUser = null;
 
@@ -954,7 +946,35 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   var topbarImg = document.querySelector('.topbar-right img');
   if (topbarImg) document.getElementById('login-logo').src = topbarImg.src;
+  loadNames();
 });
+
+// Carica i nomi dal foglio "Dati" (colonna Cognome e Nome)
+async function loadNames() {
+  const sel = document.getElementById('login-nome');
+  const msg = document.getElementById('login-msg');
+  sel.innerHTML = '<option value="">— Caricamento… —</option>';
+  sel.disabled = true;
+  try {
+    const r = await apiLogin({ action: 'names' });
+    if (r && r.ok && Array.isArray(r.names)) {
+      sel.innerHTML = '<option value="">— Seleziona il tuo nome —</option>';
+      r.names.forEach(function(n) {
+        const o = document.createElement('option');
+        o.value = n; o.textContent = n;
+        sel.appendChild(o);
+      });
+      sel.disabled = false;
+      msg.style.display = 'none';
+    } else {
+      sel.innerHTML = '<option value="">— Errore —</option>';
+      showMsg(msg, 'error', 'Impossibile caricare l\'elenco. Ricarica la pagina.');
+    }
+  } catch(e) {
+    sel.innerHTML = '<option value="">— Errore —</option>';
+    showMsg(msg, 'error', 'Errore di rete. Ricarica la pagina.');
+  }
+}
 
 const rpeDescMap = {
   0:  'Nullo \u2013 Nessuno sforzo percepito',
