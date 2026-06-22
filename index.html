@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>RPE · Hooper – Mantova Primavera</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +34,7 @@
   .topbar {
     background: linear-gradient(180deg, #ffffff 0%, #fdfdfd 100%);
     border-bottom: 3px solid var(--rosso);
-    padding: clamp(26px, 4.5vw, 32px) clamp(16px, 4vw, 32px) clamp(12px, 2.5vw, 16px);
+    padding: calc(env(safe-area-inset-top, 0px) + clamp(16px, 3vw, 20px)) clamp(16px, 4vw, 32px) clamp(12px, 2.5vw, 16px);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -48,14 +48,6 @@
     letter-spacing: clamp(2px, 0.6vw, 3.5px);
     text-transform: uppercase;
     color: var(--rosso);
-  }
-  .topbar-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(15px, 3vw, 19px);
-    font-weight: 600;
-    color: var(--testo);
-    margin-top: 2px;
-    font-style: italic;
   }
   .topbar img {
     height: clamp(56px, 11vw, 68px);
@@ -352,10 +344,9 @@
   /* ── MOBILE / IFRAME FIX ── */
   @media (max-width: 480px) {
     body { padding: 0; }
-    .topbar { padding: 28px 12px 10px; border-bottom-width: 2px; }
+    .topbar { padding: calc(env(safe-area-inset-top, 0px) + 16px) 12px 12px; border-bottom-width: 2px; }
     .topbar img { height: 36px; }
     .topbar-tag { font-size: 9px; letter-spacing: 1.5px; }
-    .topbar-title { font-size: 12px; }
     .app { padding: 14px 26px 24px; }
     .home-hero { display: none; }
     .screen-label { margin-bottom: 2px; font-size: 9px; }
@@ -561,7 +552,6 @@
 <div class="topbar">
   <div class="topbar-left">
     <span class="topbar-tag">Mantova Primavera</span>
-    <span class="topbar-title">Monitoraggio Atleti</span>
   </div>
   <div class="topbar-right">
     <span class="user-badge" id="user-badge" style="display:none"></span>
