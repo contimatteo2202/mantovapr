@@ -958,7 +958,7 @@ async function loadNames() {
   try {
     const r = await apiLogin({ action: 'names' });
     if (r && r.ok && Array.isArray(r.names)) {
-      sel.innerHTML = '<option value="">— Seleziona il tuo nome —</option>';
+      sel.innerHTML = '<option value="">— Seleziona il nome —</option>';
       r.names.forEach(function(n) {
         const o = document.createElement('option');
         o.value = n; o.textContent = n;
